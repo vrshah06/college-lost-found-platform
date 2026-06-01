@@ -7,6 +7,7 @@ import CreateItem from "./pages/CreateItem";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard"; 
+import EditItem from "./pages/EditItem";
 function App() {
   return (
     <>
@@ -29,6 +30,14 @@ function App() {
   element={
     <ProtectedRoute>
       <Dashboard />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/edit-item/:id"
+  element={
+    <ProtectedRoute>
+      <EditItem />
     </ProtectedRoute>
   }
 />

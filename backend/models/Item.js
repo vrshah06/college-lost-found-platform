@@ -27,6 +27,9 @@ const itemSchema = new mongoose.Schema(
       enum: ["lost", "found"],
       required: true,
     },
+    image: {
+      type: String,
+    },
 
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -35,7 +38,7 @@ const itemSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("Item", itemSchema);

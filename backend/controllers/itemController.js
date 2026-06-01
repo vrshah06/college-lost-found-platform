@@ -3,8 +3,9 @@ const Item = require("../models/Item");
 
 // CREATE ITEM
 const createItem = async (req, res) => {
-
   try {
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
 
     const {
       title,
@@ -20,17 +21,19 @@ const createItem = async (req, res) => {
       category,
       location,
       status,
+      image: req.file ? req.file.path : "",
       user: req.user._id,
     });
 
     res.status(201).json(item);
 
   } catch (error) {
+    console.log("CREATE ITEM ERROR:");
+    console.log(error);
 
     res.status(500).json({
       message: error.message,
     });
-
   }
 };
 // GET MY ITEMS
@@ -139,7 +142,9 @@ const updateItem = async (req, res) => {
       await Item.findByIdAndUpdate(
         req.params.id,
         req.body,
-        { new: true }
+        {
+          new: true,
+        }
       );
 
     res.status(200).json(updatedItem);
