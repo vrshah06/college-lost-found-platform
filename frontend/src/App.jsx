@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard"; 
 import EditItem from "./pages/EditItem";
+import ClaimRequests from "./pages/ClaimRequests";
 function App() {
   return (
     <>
@@ -38,6 +39,14 @@ function App() {
   element={
     <ProtectedRoute>
       <EditItem />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/claim-requests"
+  element={
+    <ProtectedRoute>
+      <ClaimRequests />
     </ProtectedRoute>
   }
 />

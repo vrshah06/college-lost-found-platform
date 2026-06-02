@@ -19,6 +19,9 @@ app.use("/api/items", itemRoutes);
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
+const claimRoutes = require("./routes/claimRoutes");
+app.use("/api/claims", claimRoutes);
+
 app.get("/", (req, res) => {
   res.send("CampusConnect API Running...");
 });
