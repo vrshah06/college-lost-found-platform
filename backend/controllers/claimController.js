@@ -21,7 +21,6 @@ const createClaim = async (req, res) => {
     });
 
     res.status(201).json(claim);
-
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -37,7 +36,6 @@ const getOwnerClaims = async (req, res) => {
       .populate("item", "title image status");
 
     res.status(200).json(claims);
-
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -54,10 +52,7 @@ const updateClaimStatus = async (req, res) => {
       });
     }
 
-    if (
-      claim.owner.toString() !==
-      req.user._id.toString()
-    ) {
+    if (claim.owner.toString() !== req.user._id.toString()) {
       return res.status(401).json({
         message: "Not authorized",
       });
@@ -67,7 +62,45 @@ const updateClaimStatus = async (req, res) => {
 
     await claim.save();
 
+    if (req.body.status === "accepted") {
+      await Item.findByIdAndUpdate(claim.item, {
+        status: "resolved",
+      });
+    }
+
     res.status(200).json(claim);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+const getMyClaims = async (req, res) => {
+  try {
+    const claims = await Claim.find({
+      claimant: req.user._id,
+    })
+      .populate("item", "title image status")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(claims);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+const getPendingCount = async (req, res) => {
+  try {
+    const count = await Claim.countDocuments({
+      owner: req.user._id,
+      status: "pending",
+    });
+
+    res.status(200).json({
+      count,
+    });
 
   } catch (error) {
     res.status(500).json({
@@ -78,6 +111,8 @@ const updateClaimStatus = async (req, res) => {
 
 module.exports = {
   createClaim,
-    getOwnerClaims,
-    updateClaimStatus,
+  getOwnerClaims,
+  updateClaimStatus,
+  getMyClaims,
+  getPendingCount,
 };

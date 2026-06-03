@@ -23,10 +23,10 @@ const itemSchema = new mongoose.Schema(
     },
 
     status: {
-      type: String,
-      enum: ["lost", "found"],
-      required: true,
-    },
+  type: String,
+  enum: ["lost", "found", "resolved"],
+  default: "lost",
+},
     image: {
       type: String,
     },

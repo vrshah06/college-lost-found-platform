@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard"; 
 import EditItem from "./pages/EditItem";
 import ClaimRequests from "./pages/ClaimRequests";
+import MyClaims from "./pages/MyClaims";
 function App() {
   return (
     <>
@@ -47,6 +48,14 @@ function App() {
   element={
     <ProtectedRoute>
       <ClaimRequests />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/my-claims"
+  element={
+    <ProtectedRoute>
+      <MyClaims />
     </ProtectedRoute>
   }
 />
