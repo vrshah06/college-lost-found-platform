@@ -22,7 +22,7 @@ function Navbar() {
       if (!token) return;
 
       const res = await axios.get(
-        "http://localhost:5000/api/claims/pending-count",
+        `${import.meta.env.VITE_API_URL}/api/claims/pending-count`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

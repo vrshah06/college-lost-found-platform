@@ -13,7 +13,7 @@ function Home() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/items");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/items`);
 
       setItems(res.data);
       setLoading(false);
@@ -36,7 +36,7 @@ function Home() {
       if (!message) return;
 
       await axios.post(
-        "http://localhost:5000/api/claims",
+        `${import.meta.env.VITE_API_URL}/api/claims`,
         {
           itemId,
           message,

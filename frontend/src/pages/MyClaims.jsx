@@ -13,7 +13,7 @@ function MyClaims() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:5000/api/claims/my-submissions",
+        `${import.meta.env.VITE_API_URL}/api/claims/my-submissions`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

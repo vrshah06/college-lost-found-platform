@@ -38,7 +38,7 @@ if (image) {
 }
 
 await axios.post(
-  "http://localhost:5000/api/items",
+  `${import.meta.env.VITE_API_URL}/api/items`,
   data,
   {
     headers: {

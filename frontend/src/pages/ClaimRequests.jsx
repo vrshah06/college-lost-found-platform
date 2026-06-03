@@ -13,7 +13,7 @@ function ClaimRequests() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:5000/api/claims/my-claims",
+         `${import.meta.env.VITE_API_URL}/api/claims/my-claims`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -32,7 +32,7 @@ function ClaimRequests() {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `http://localhost:5000/api/claims/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/claims/${id}`,
         { status },
         {
           headers: {

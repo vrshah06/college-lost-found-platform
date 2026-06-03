@@ -13,7 +13,7 @@ function Dashboard() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.get("http://localhost:5000/api/items/my-items", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/items/my-items`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -29,7 +29,7 @@ function Dashboard() {
     try {
       const token = localStorage.getItem("token");
 
-      await axios.delete(`http://localhost:5000/api/items/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/items/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
