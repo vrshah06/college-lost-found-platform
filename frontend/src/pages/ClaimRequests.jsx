@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useToast } from "../components/Toast";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function ClaimRequests() {
   const [claims, setClaims] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     fetchClaims();
@@ -13,7 +17,7 @@ function ClaimRequests() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-         `${import.meta.env.VITE_API_URL}/api/claims/my-claims`,
+        `${import.meta.env.VITE_API_URL}/api/claims/my-claims`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -22,8 +26,10 @@ function ClaimRequests() {
       );
 
       setClaims(res.data);
+      setLoading(false);
     } catch (error) {
       console.log(error);
+      setLoading(false);
     }
   };
 
@@ -41,81 +47,125 @@ function ClaimRequests() {
         }
       );
 
-      alert(`Claim ${status}`);
+      toast.success(`Claim ${status} successfully`);
       fetchClaims();
-
     } catch (error) {
       console.log(error);
+      toast.error("Failed to update claim status");
     }
   };
 
+  if (loading) {
+    return (
+      <div className="page-container">
+        <LoadingSpinner text="Loading claim requests..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-5">
-      <h1 className="text-3xl font-bold mb-5">
-        Claim Requests
-      </h1>
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">📨 Claim Requests</h1>
+        <p className="page-subtitle">
+          Review requests from users claiming your items
+        </p>
+      </div>
 
       {claims.length === 0 ? (
-        <p>No claim requests found</p>
+        <div className="empty-state">
+          <div className="empty-state-icon">📭</div>
+          <p className="empty-state-text">No claim requests yet</p>
+          <p className="empty-state-subtext">
+            When someone claims your item, it will appear here
+          </p>
+        </div>
       ) : (
-        claims.map((claim) => (
-          <div
-            key={claim._id}
-            className="border p-4 rounded shadow mb-4"
-          >
-            <h2 className="text-xl font-bold">
-              {claim.item?.title}
-            </h2>
+        <div className="grid-container">
+          {claims.map((claim) => (
+            <div key={claim._id} className="card">
+              <div className="card-content">
+                <h3 className="card-title">{claim.item?.title}</h3>
 
-            <p>
-              <strong>Claimant:</strong>{" "}
-              {claim.claimant?.name}
-            </p>
+                <div className="card-meta" style={{ marginBottom: "1rem" }}>
+                  <div className="card-meta-item">
+                    <span className="card-meta-icon">👤</span>
+                    <span>
+                      <strong>Claimant:</strong> {claim.claimant?.name}
+                    </span>
+                  </div>
+                  <div className="card-meta-item">
+                    <span className="card-meta-icon">📧</span>
+                    <span>
+                      <strong>Email:</strong> {claim.claimant?.email}
+                    </span>
+                  </div>
+                  <div style={{ marginTop: "0.5rem" }}>
+                    <strong
+                      style={{
+                        color: "var(--text-muted)",
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      💬 Message:
+                    </strong>
+                    <p
+                      style={{
+                        marginTop: "6px",
+                        marginBottom: 0,
+                        padding: "10px 14px",
+                        background: "var(--bg-glass)",
+                        borderRadius: "var(--radius-sm)",
+                        border: "1px solid var(--border)",
+                        fontStyle: "italic",
+                        fontSize: "0.9rem",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      "{claim.message}"
+                    </p>
+                  </div>
+                </div>
 
-            <p>
-              <strong>Email:</strong>{" "}
-              {claim.claimant?.email}
-            </p>
+                <div style={{ marginBottom: "1rem" }}>
+                  <span
+                    className={`status-badge ${
+                      claim.status === "pending"
+                        ? "status-pending"
+                        : claim.status === "accepted"
+                          ? "status-found"
+                          : "status-lost"
+                    }`}
+                  >
+                    <span className="status-dot" />
+                    {claim.status === "pending" && "PENDING"}
+                    {claim.status === "accepted" && "ACCEPTED"}
+                    {claim.status === "rejected" && "REJECTED"}
+                  </span>
+                </div>
 
-            <p>
-              <strong>Message:</strong>{" "}
-              {claim.message}
-            </p>
-
-            <p>
-              <strong>Status:</strong>{" "}
-              {claim.status}
-            </p>
-
-            {claim.status === "pending" && (
-              <div className="flex gap-3 mt-3">
-                <button
-                  onClick={() =>
-                    updateStatus(
-                      claim._id,
-                      "accepted"
-                    )
-                  }
-                  className="bg-green-500 text-white px-4 py-2 rounded"
-                >
-                  Accept
-                </button>
-
-                <button
-                  onClick={() =>
-                    updateStatus(
-                      claim._id,
-                      "rejected"
-                    )
-                  }
-                  className="bg-red-500 text-white px-4 py-2 rounded"
-                >
-                  Reject
-                </button>
+                {claim.status === "pending" && (
+                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                    <button
+                      onClick={() => updateStatus(claim._id, "accepted")}
+                      className="btn btn-primary"
+                      style={{ flex: 1 }}
+                    >
+                      ✓ Accept
+                    </button>
+                    <button
+                      onClick={() => updateStatus(claim._id, "rejected")}
+                      className="btn btn-danger"
+                      style={{ flex: 1 }}
+                    >
+                      ✕ Reject
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

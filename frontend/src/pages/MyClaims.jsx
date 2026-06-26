@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function MyClaims() {
   const [claims, setClaims] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchClaims();
@@ -22,56 +24,172 @@ function MyClaims() {
       );
 
       setClaims(res.data);
-
+      setLoading(false);
     } catch (error) {
       console.log(error);
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="page-container">
+        <LoadingSpinner text="Loading your claims..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-5">
-      <h1 className="text-3xl font-bold mb-5">
-        My Claims
-      </h1>
+    <div className="page-container">
+      <div className="page-header">
+        <h1 className="page-title">🙋 My Claims</h1>
+        <p className="page-subtitle">
+          Track the status of claims you've submitted
+        </p>
+      </div>
 
       {claims.length === 0 ? (
-        <p>No claims submitted</p>
+        <div className="empty-state">
+          <div className="empty-state-icon">📭</div>
+          <p className="empty-state-text">No claims submitted yet</p>
+          <p className="empty-state-subtext">
+            Browse items and submit a claim to help find lost items
+          </p>
+        </div>
       ) : (
-        claims.map((claim) => (
-          <div
-            key={claim._id}
-            className="border p-4 rounded shadow mb-4"
-          >
-            <h2 className="text-xl font-bold">
-              {claim.item?.title}
-            </h2>
+        <div className="grid-container">
+          {claims.map((claim) => (
+            <div key={claim._id} className="card">
+              <div className="card-content">
+                <h3 className="card-title">{claim.item?.title}</h3>
 
-            <p>
-              <strong>Message:</strong>{" "}
-              {claim.message}
-            </p>
+                <div className="card-meta" style={{ marginBottom: "1rem" }}>
+                  <div>
+                    <strong
+                      style={{
+                        color: "var(--text-muted)",
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      📝 Your Message:
+                    </strong>
+                    <p
+                      style={{
+                        marginTop: "6px",
+                        marginBottom: 0,
+                        padding: "10px 14px",
+                        background: "var(--bg-glass)",
+                        borderRadius: "var(--radius-sm)",
+                        border: "1px solid var(--border)",
+                        fontStyle: "italic",
+                        fontSize: "0.9rem",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      "{claim.message}"
+                    </p>
+                  </div>
+                </div>
 
-            <p className="mt-2">
-              <strong>Claim Status:</strong>{" "}
-              <span
-                className={`px-2 py-1 rounded text-white ${
-                  claim.status === "accepted"
-                    ? "bg-green-500"
-                    : claim.status === "rejected"
-                    ? "bg-red-500"
-                    : "bg-yellow-500"
-                }`}
-              >
-                {claim.status}
-              </span>
-            </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "1rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <strong
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "var(--text-muted)",
+                        display: "block",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      Claim Status
+                    </strong>
+                    <span
+                      className={`status-badge ${
+                        claim.status === "accepted"
+                          ? "status-found"
+                          : claim.status === "rejected"
+                            ? "status-lost"
+                            : "status-pending"
+                      }`}
+                      style={{ display: "inline-flex" }}
+                    >
+                      <span className="status-dot" />
+                      {claim.status.toUpperCase()}
+                    </span>
+                  </div>
 
-            <p className="mt-2">
-              <strong>Item Status:</strong>{" "}
-              {claim.item?.status}
-            </p>
-          </div>
-        ))
+                  <div style={{ flex: 1 }}>
+                    <strong
+                      style={{
+                        fontSize: "0.8rem",
+                        color: "var(--text-muted)",
+                        display: "block",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      Item Status
+                    </strong>
+                    <span
+                      className={`status-badge ${
+                        claim.item?.status === "lost"
+                          ? "status-lost"
+                          : claim.item?.status === "found"
+                            ? "status-found"
+                            : "status-resolved"
+                      }`}
+                      style={{ display: "inline-flex" }}
+                    >
+                      <span className="status-dot" />
+                      {claim.item?.status?.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="card-meta">
+                  <div className="card-meta-item">
+                    <span className="card-meta-icon">📍</span>
+                    <span>
+                      <strong>Location:</strong> {claim.item?.location}
+                    </span>
+                  </div>
+                  <div className="card-meta-item">
+                    <span className="card-meta-icon">📁</span>
+                    <span>
+                      <strong>Category:</strong> {claim.item?.category}
+                    </span>
+                  </div>
+                  <div className="card-meta-item">
+                    <span className="card-meta-icon">📅</span>
+                    <span>
+                      <strong>Submitted:</strong>{" "}
+                      {new Date(claim.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {claim.status === "accepted" && (
+                  <div className="claim-status-message accepted">
+                    ✅ Great news! Your claim has been accepted. Contact the item
+                    owner for pickup details.
+                  </div>
+                )}
+
+                {claim.status === "rejected" && (
+                  <div className="claim-status-message rejected">
+                    ✕ Your claim was not accepted. Try other items or submit
+                    another claim.
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

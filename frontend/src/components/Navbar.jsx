@@ -1,24 +1,31 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [pendingCount, setPendingCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const token = localStorage.getItem("token");
 
   const logout = () => {
     localStorage.removeItem("token");
     window.location.href = "/login";
   };
+
   useEffect(() => {
     fetchPendingCount();
-  }, []);
+  }, [token]);
+
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   const fetchPendingCount = async () => {
     try {
       const token = localStorage.getItem("token");
-
       if (!token) return;
 
       const res = await axios.get(
@@ -27,7 +34,7 @@ function Navbar() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       setPendingCount(res.data.count);
@@ -36,37 +43,84 @@ function Navbar() {
     }
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <nav className="bg-black text-white p-4 flex justify-between">
-      <h1 className="font-bold text-xl">CampusConnect</h1>
+    <nav className="navbar">
+      <div className="navbar-inner">
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <h1 className="navbar-brand">
+            <span className="navbar-brand-icon">🔍</span>
+            CampusConnect
+          </h1>
+        </Link>
 
-      <div className="flex gap-4">
-        <Link to="/">Home</Link>
+        <button
+          className={`nav-hamburger ${menuOpen ? "open" : ""}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle navigation menu"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
 
-        {!token && (
-          <>
-            <Link to="/login">Login</Link>
+        <div className={`nav-links ${menuOpen ? "open" : ""}`}>
+          <Link to="/" className={isActive("/") ? "active" : ""}>
+            Home
+          </Link>
 
-            <Link to="/register">Register</Link>
-          </>
-        )}
+          {!token && (
+            <>
+              <Link to="/login" className={isActive("/login") ? "active" : ""}>
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className={isActive("/register") ? "active" : ""}
+              >
+                Register
+              </Link>
+            </>
+          )}
 
-        {token && (
-          <>
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/claim-requests">
-              Claims
-              {pendingCount > 0 && (
-                <span className="ml-1 bg-red-500 text-white px-2 rounded-full text-sm">
-                  {pendingCount}
-                </span>
-              )}
-            </Link>{" "}
-            <Link to="/my-claims">My Claims</Link>
-            <Link to="/create-item">Create Item</Link>
-            <button onClick={logout}>Logout</button>
-          </>
-        )}
+          {token && (
+            <>
+              <Link
+                to="/dashboard"
+                className={isActive("/dashboard") ? "active" : ""}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/claim-requests"
+                className={isActive("/claim-requests") ? "active" : ""}
+                style={{ position: "relative" }}
+              >
+                Claims
+                {pendingCount > 0 && (
+                  <span className="notification-badge">{pendingCount}</span>
+                )}
+              </Link>
+              <Link
+                to="/my-claims"
+                className={isActive("/my-claims") ? "active" : ""}
+              >
+                My Claims
+              </Link>
+              <Link
+                to="/create-item"
+                className={`btn btn-primary btn-small ${isActive("/create-item") ? "active" : ""}`}
+                style={{ marginLeft: "4px" }}
+              >
+                + New Item
+              </Link>
+              <button onClick={logout} className="nav-logout-btn">
+                Logout
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );

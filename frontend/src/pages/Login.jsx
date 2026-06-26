@@ -1,13 +1,18 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useToast } from "../components/Toast";
 
 function Login() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -18,52 +23,111 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
     try {
+      setLoading(true);
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
         formData
       );
 
       localStorage.setItem("token", res.data.token);
-
+      toast.success("Login successful! Welcome back.");
       navigate("/");
-      console.log(res.data);
-
     } catch (error) {
-      alert(error.response.data.message);
+      toast.error(error.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 w-96 shadow-lg p-6 rounded-xl"
-      >
-        <h1 className="text-3xl font-bold text-center">
-          Login
-        </h1>
+    <div className="auth-page">
+      <div className="auth-decorative">
+        <div className="auth-decorative-content">
+          <div className="auth-decorative-icon">🔐</div>
+          <h2 className="auth-decorative-title">Welcome Back!</h2>
+          <p className="auth-decorative-text">
+            Sign in to manage your lost & found items and track your claims.
+          </p>
+        </div>
+      </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="border p-2 rounded"
-          onChange={handleChange}
-        />
+      <div className="auth-form-side">
+        <div className="auth-form-container">
+          <div className="form-container">
+            <h1 className="form-title">Sign In</h1>
+            <p className="form-subtitle">
+              Access your CampusConnect account
+            </p>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          className="border p-2 rounded"
-          onChange={handleChange}
-        />
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="email">Email Address</label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="your@email.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="form-input"
+                  required
+                />
+              </div>
 
-        <button className="bg-black text-white p-2 rounded">
-          Login
-        </button>
-      </form>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <div className="password-wrapper">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="form-input"
+                    style={{ width: "100%", paddingRight: "48px" }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary"
+                style={{
+                  width: "100%",
+                  marginTop: "1.5rem",
+                  opacity: loading ? 0.6 : 1,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  padding: "14px",
+                }}
+              >
+                {loading ? "Signing in..." : "Sign In →"}
+              </button>
+            </form>
+
+            <div className="auth-footer-text">
+              Don't have an account?{" "}
+              <Link to="/register">Create one now</Link>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
